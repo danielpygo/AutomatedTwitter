@@ -1,5 +1,7 @@
 import tweepy
 import json
+import time
+import random
 def setup():
     """
     my auth.txt looks like:
@@ -28,25 +30,70 @@ def main():
 
     auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
     auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+    while True:
+        try:
+            api = tweepy.API(auth, wait_on_rate_limit = True)
+            user_searches = ['python', 'UT Austin', 'UT2019', 'Computer Science',
+            'pythonic']
+            for search in user_searches:
+                for user in search_for_users(api,search):
+                    if user.followers_count < 300:
+                        print(user.screen_name)
+                        user.follow()
 
-    api = tweepy.API(auth, wait_on_rate_limit = True)
-    for User in search_for_users(api,'python')[:5]:
-        print()
-        print("**************")
-        print(json.dumps(User._json, indent =4 ))
-        print("**************")
-        print()
+            for follower in tweepy.Cursor(api.followers).items():
+                follower.follow()
 
-    # f = open('to_tweet.txt', 'r+')
-    # d = f.readlines()
-    # f.seek(0)
-    # for tweet in d:
-    #     api.update_status(tweet)
-    #     if tweet.rstrip() != "remove this line":
-    #         f.write(tweet)
-    # f.truncate()
-    # f.close()
-
+            searches = [
+                'UT Austin',
+                'Computer Science',
+                'Javascript',
+                'Rust programming',
+                'Dropbox',
+                'Amazon',
+                'MIT',
+                'Microsoft',
+                'LSTM',
+                'Machine Learning',
+                'Deep Learning',
+                'Pythonic',
+                'Golang',
+                'UT2019',
+                'Google Deep Mind',
+                'Data Science'
+            ]
+            numberOfTweets = "Number of tweets you wish to interact with"
+            for search in searches:
+                for tweet in tweepy.Cursor(api.search, search).items(50):
+                    if tweet.user.followers_count < 150:
+                        tweet.user.follow()
+                    try:
+                        tweet.favorite()
+                        print('Favorited the tweet')
+                    except tweepy.TweepError as e:
+                        print(e.reason)
+                    except StopIteration:
+                        break
+            f = open('to_tweet.txt', 'r+')
+            d = f.readlines()
+            f.seek(0)
+            if not d:
+                continue
+            if random.random() < .05:
+                api.update_status(d[0])
+                d.pop(0)
+                print('hi')
+            for tweet in d:
+                f.write(tweet)
+            f.truncate()
+            f.close()
+            time.sleep(5 * 60)
+        except tweepy.TweepError as e:
+            print('Hit limit' + e)
+            time.sleep(15 * 60)
+        except tweepy.RateLimitError:
+            print('Hit the rate limit')
+            time.sleep(15 * 60)
     # api.lookup_users(user_ids=None, screen_names=None, include_entities=None)
 
 
