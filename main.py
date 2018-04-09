@@ -38,7 +38,6 @@ def main():
             for search in user_searches:
                 for user in search_for_users(api,search):
                     if user.followers_count < 300:
-                        print(user.screen_name)
                         user.follow()
 
             for follower in tweepy.Cursor(api.followers).items():
@@ -54,6 +53,7 @@ def main():
                 'MIT',
                 'Microsoft',
                 'LSTM',
+                'SGD',
                 'Machine Learning',
                 'Deep Learning',
                 'Pythonic',
@@ -65,13 +65,11 @@ def main():
             numberOfTweets = "Number of tweets you wish to interact with"
             for search in searches:
                 for tweet in tweepy.Cursor(api.search, search).items(50):
-                    if tweet.user.followers_count < 150:
+                    if tweet.user.followers_count < 180:
                         tweet.user.follow()
                     try:
                         tweet.favorite()
                         print('Favorited the tweet')
-                    except tweepy.TweepError as e:
-                        print(e.reason)
                     except StopIteration:
                         break
             f = open('to_tweet.txt', 'r+')
@@ -82,18 +80,21 @@ def main():
             if random.random() < .05:
                 api.update_status(d[0])
                 d.pop(0)
-                print('hi')
             for tweet in d:
                 f.write(tweet)
             f.truncate()
             f.close()
             time.sleep(5 * 60)
         except tweepy.TweepError as e:
-            print('Hit limit' + e)
+            print('Hit limit' + str(e))
             time.sleep(15 * 60)
         except tweepy.RateLimitError:
             print('Hit the rate limit')
             time.sleep(15 * 60)
+        except Exception as e:
+            print('Unhandled Exception? ' + str(e))
+            time.sleep(15 * 60)
+
     # api.lookup_users(user_ids=None, screen_names=None, include_entities=None)
 
 
