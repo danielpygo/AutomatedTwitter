@@ -88,7 +88,7 @@ def main():
                 continue
             if random.random() < .05:
                 api.update_status(d[0])
-            d.pop(0)
+                d.pop(0)
             for tweet in d:
                 f.write(tweet)
             f.truncate()
